@@ -50,3 +50,27 @@ class ReadCsvData:
                     setattr(self, 'field{}'.format(ii+1), data)
             else:
                 setattr(self, 'field{}'.format(ii+1), data)
+                
+    def multi_sort(self, *atts):
+        """
+        sort ALL attributes in ascending order by the attributes in `atts`
+        pass *atts in the order of sort priority eg sort by atts[0] first and 
+        then within places where atts[0] isn't unique, sort by atts[1]
+        
+        atts is a list of strings that must be valid attributes of the object
+        """
+        ## reversed because np.lexsort takes these arguments in the order it 
+        ## performs the sort operation, the reverse of the order of sort 
+        ## priority described in the docstring
+        keys = tuple(reversed([getattr(self, att) for att in atts]))
+        ind = np.lexsort(keys)
+        for att in dir(self):
+            ## don't try for private attributes
+            if att[:2] != '__':
+                try:
+                    ## get attribute, sort, then reset attribute
+                    temp = getattr(self, att)
+                    setattr(self, att, temp[ind])
+                ## tried to index a method
+                except TypeError:
+                    continue
